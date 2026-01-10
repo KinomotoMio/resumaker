@@ -1,7 +1,7 @@
 # Resumaker
 
-> 一个智能的 HTML 简历生成框架，配合 Claude Code 实现场景化简历制作
-> An intelligent HTML resume generator framework with Claude Code integration for scenario-based resume creation
+> 一个智能的 HTML 简历生成框架，配合 Agent Skills 实现场景化简历制作
+> An intelligent HTML resume generator framework with Agent Skills integration for scenario-based resume creation
 
 [English](#english) | [中文](#中文)
 
@@ -13,7 +13,7 @@
 
 - **智能简历生成** - 根据目标职位、行业、风格偏好动态生成，无固定模板限制
 - **高质量 PDF 输出** - 矢量 PDF，文字可选中，适合打印和在线投递
-- **Claude Code Skills** - 内置设计指南，通过对话式交互完成简历制作
+- **Agent Skills** - 内置设计指南，通过对话式交互完成简历制作
 - **多种风格支持** - 极简、现代、传统、创意等多种设计风格
 - **完全可定制** - 基于 Tailwind CSS，易于修改和扩展
 
@@ -60,7 +60,7 @@ node scripts/generate-resume-pdf.js --input html/resume.html --output pdf/resume
 
 ### 工作原理
 
-Resumaker 不提供固定模板，而是通过 Claude Code Skills 中的**设计指南**，根据你的具体场景（目标职位、行业、风格偏好）动态生成最合适的简历。
+Resumaker 不提供固定模板，而是通过 Agent Skills 中的**设计指南**，根据你的具体场景（目标职位、行业、风格偏好）动态生成最合适的简历。
 
 #### 工作流程
 
@@ -81,7 +81,7 @@ resumaker/
 ├── scripts/
 │   └── generate-resume-pdf.js  # PDF 生成脚本
 ├── .claude/
-│   └── skills/          # Claude Code Skills
+│   └── skills/          # Claude Code Agent Skills
 │       ├── resume-new/      # 智能生成（含设计指南）
 │       ├── resume-edit/     # 智能编辑
 │       ├── resume-pdf/      # PDF 生成
@@ -125,7 +125,7 @@ resumaker/
 
 - **Intelligent Resume Generation** - Dynamically generates resumes based on target position, industry, and style preferences without fixed template limitations
 - **High-Quality PDF Output** - Vector PDF with selectable text, suitable for printing and online submission
-- **Claude Code Skills** - Built-in design guidelines with conversational interaction for resume creation
+- **Agent Skills** - Built-in design guidelines with conversational interaction for resume creation
 - **Multiple Style Support** - Minimalist, modern, traditional, creative, and other design styles
 - **Fully Customizable** - Based on Tailwind CSS, easy to modify and extend
 
@@ -172,7 +172,7 @@ node scripts/generate-resume-pdf.js --input html/resume.html --output pdf/resume
 
 ### How It Works
 
-Resumaker doesn't provide fixed templates. Instead, it uses **design guidelines** in Claude Code Skills to dynamically generate the most suitable resume based on your specific scenario (target position, industry, style preferences).
+Resumaker doesn't provide fixed templates. Instead, it uses **design guidelines** in Agent Skills to dynamically generate the most suitable resume based on your specific scenario (target position, industry, style preferences).
 
 #### Workflow
 
@@ -193,7 +193,7 @@ resumaker/
 ├── scripts/
 │   └── generate-resume-pdf.js  # PDF generation script
 ├── .claude/
-│   └── skills/          # Claude Code Skills
+│   └── skills/          # Claude Code Agent Skills
 │       ├── resume-new/      # Intelligent generation (with design guide)
 │       ├── resume-edit/     # Intelligent editing
 │       ├── resume-pdf/      # PDF generation
