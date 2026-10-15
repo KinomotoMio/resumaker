@@ -1,239 +1,110 @@
 # Resumaker
 
-> 一个智能的 HTML 简历生成框架，配合 Agent Skills 实现场景化简历制作
-> An intelligent HTML resume generator framework with Agent Skills integration for scenario-based resume creation
+> 简历不是"写"出来的，是从你的履历库里，针对一份 JD"编译"出来的。
 
-[English](#english) | [中文](#中文)
+Resumaker 是一组 [Agent Skills](https://agentskills.io)，配合 Claude Code、Codex、Gemini CLI 等任何支持 Skills 的 Agent 使用。
+它教你用一种方式长期维护自己的履历素材——**履历即代码（Career as Code）**——再在需要时把素材编译成对口的简历和面试准备。
 
----
+[English](#english)
 
-## 中文
+<p align="center"><img src="docs/assets/demo-resume.png" width="560" alt="示例简历"></p>
 
-### 特性
+## 为什么
 
-- **智能简历生成** - 根据目标职位、行业、风格偏好动态生成，无固定模板限制
-- **高质量 PDF 输出** - 矢量 PDF，文字可选中，适合打印和在线投递
-- **Agent Skills** - 内置设计指南，通过对话式交互完成简历制作
-- **多种风格支持** - 极简、现代、传统、创意等多种设计风格
-- **完全可定制** - 基于 Tailwind CSS，易于修改和扩展
+- **海投一份通用简历是低效的。** 同一件事，投基础架构岗和投业务岗应该讲得完全不同。
+- **写简历时才回忆，一定会忘。** 八个月前那次优化到底提升了多少？当时为什么选了这个方案？
+- **面试官是看着简历出题的。** 写上去却答不出来的内容，比不写还糟糕。
 
-### 快速开始
+所以 Resumaker 把重心从"生成一份好看的简历"挪到了**平时把素材记好**：
 
-#### 环境要求
+```
+平时                          看到 JD 时
+─────────────────────         ─────────────────────────────────────
+做完一件事 ─┐                  ┌─▶ match.md   匹配报告：命中、缺口、投递策略
+Agent 会话 ─┼─▶  履历库  ──编译──┼─▶ resume.pdf 定制简历，每条 bullet 都可溯源
+旧简历/周报 ─┘   (一件事一个文件)  └─▶ grill.md   面试深挖卡：会被追问什么、怎么答
+```
 
-- Node.js 18+
-- pnpm (推荐) 或 npm
-- Google Chrome (用于 PDF 生成)
-- [Claude Code](https://claude.ai/claude-code)
+完整的方法论见 [docs/methodology.md](docs/methodology.md)。
 
-#### 安装
+## 安装
 
 ```bash
-git clone https://github.com/your-username/resumaker.git
-cd resumaker
-pnpm install
+npx skills add KinomotoMio/resumaker -g
 ```
 
-#### 使用 Claude Code
+`-g` 表示装到用户目录，这样在任何项目里都能用。可以用 `-a claude-code -a codex` 指定目标 Agent。
 
-在项目目录下启动 Claude Code，然后使用以下 skills：
+也可以直接 clone 本仓库，在仓库目录里启动 Agent：`.claude/skills` 和 `.agents/skills` 都指向 `skills/`，Claude Code、Codex、Gemini CLI 会自动发现。
+
+**依赖**：Python 3.8+，以及用于排版的 [Typst](https://github.com/typst/typst)（macOS 上用 `brew install typst`）。`pdftotext` 可选。
+
+## 开始
+
+对你的 Agent 说"帮我初始化简历库"，它会问你把履历库放在哪：
+
+| 方式 | 适合 |
+|---|---|
+| **独立私有仓库**（推荐） | 长期维护、多设备同步，像一个专门存履历的网盘 |
+| 放在当前项目里，自动 gitignore | 先试试 |
+| 指向已有目录 | 已经在用 Obsidian、iCloud 或个人 wiki |
+
+然后导入旧简历、GitHub 或周报，或者做一次 15 分钟的访谈，先记 3～5 件最拿得出手的事。
+
+## Skills
+
+| Skill | 做什么 | 什么时候用 |
+|---|---|---|
+| `resumaker-init` | 建库、选存储方式、可选开启自动采集 | 第一次使用 |
+| `career-capture` | 随手记一笔 / 批量导入 / 访谈挖掘 | 平时，做完一件事时 |
+| `career-harvest` | 从 Agent 会话记录里自动起草成果（**可选**） | 后台自动运行，或者想起来时跑一次 |
+| `career-review` | 确认草稿、合并重复、库健康检查 | 每周 10 分钟 |
+| `resume-tailor` | JD 拆解 → 匹配 → 编译简历 → 溯源检查 | 看到心仪的岗位 |
+| `resume-render` | Typst 排版 → 看图自检 → 修正 | 生成或调整 PDF |
+| `interview-grill` | 深挖卡、模拟面试 | 面试前 |
+
+## 几个设计取舍
+
+**一件事一个文件。** 履历库的最小单位是"成果"，不是项目，也不是简历。每个成果文件记录数字的出处、保密等级，以及面向不同岗位的多种讲法。格式见 [VAULT.md](skills/resumaker-init/assets/vault/VAULT.md)。
+
+**不编造。** `resume-tailor` 生成的每条 bullet 都带 `from:` 指向成果文件，`trace.py` 会检查：来源是否存在、是否已确认，bullet 里的每个数字在来源里能否找到，是否泄露了 secret 内容。
+
+**自动采集只起草，不入库。** `career-harvest` 支持 Claude Code、Codex、Gemini CLI 的会话记录。会话结束时 hook 只把路径写进队列，耗时毫秒级；之后由 Agent 读摘要、判断、起草，草稿进 `inbox/`，由你确认后才进成果库。整个功能可以完全不开。
+
+**内容和排版分离。** `resume.yaml` 管写什么，Typst 模板管怎么排。Typst 不需要浏览器，编译只要毫秒级，中英文混排效果好。渲染后 Agent 会看预览图，检查页数、留白、孤行，最多修三轮。
+
+## 示例
+
+[`examples/demo-vault/`](examples/demo-vault/) 是一个完整的示例履历库，包含成果文件、一份示例 JD、匹配报告，以及编译出的简历。
+
+## 项目结构
 
 ```
-/resume-new     # 智能生成新简历（会询问场景和偏好）
-/resume-edit    # 编辑现有简历
-/resume-pdf     # 生成 PDF
-/resume-preview # 浏览器预览
+skills/                 # 所有 skill（Agent Skills 标准格式）
+  resumaker-init/       #   含履历库模板 assets/vault/
+  career-capture/
+  career-harvest/       #   含会话解析、hook 安装、定时任务说明
+  career-review/
+  resume-tailor/        #   含溯源检查 trace.py
+  resume-render/        #   含 Typst 模板与渲染脚本
+  interview-grill/
+docs/methodology.md     # 履历即代码
+examples/demo-vault/    # 示例履历库
+.claude/skills, .agents/skills → skills/
 ```
-
-#### 手动使用
-
-```bash
-# 生成 PDF（A4 缩放）
-pnpm pdf
-
-# 生成 PDF（保持原始尺寸）
-pnpm pdf:natural
-
-# 指定输入输出文件
-node scripts/generate-resume-pdf.js --input html/resume.html --output pdf/resume.pdf
-```
-
-### 工作原理
-
-Resumaker 不提供固定模板，而是通过 Agent Skills 中的**设计指南**，根据你的具体场景（目标职位、行业、风格偏好）动态生成最合适的简历。
-
-#### 工作流程
-
-1. **收集信息** - Claude 询问你的目标职位、行业、风格偏好
-2. **整理资料** - 你提供个人信息、工作经历、项目经历等
-3. **生成简历** - Claude 根据设计指南生成专业的 HTML 简历
-4. **预览调整** - 在浏览器中预览，使用 `/resume-edit` 调整内容
-5. **导出 PDF** - 使用 `/resume-pdf` 生成高质量 PDF
-
-### 项目结构
-
-```
-resumaker/
-├── assets/              # 图片素材（头像、项目截图等）
-├── html/                # 生成的 HTML 简历
-├── pdf/                 # 生成的 PDF
-├── reference/           # 参考资料
-├── scripts/
-│   └── generate-resume-pdf.js  # PDF 生成脚本
-├── .claude/
-│   └── skills/          # Claude Code Agent Skills
-│       ├── resume-new/      # 智能生成（含设计指南）
-│       ├── resume-edit/     # 智能编辑
-│       ├── resume-pdf/      # PDF 生成
-│       └── resume-preview/  # 预览
-├── package.json
-└── README.md
-```
-
-### Skills 参考
-
-| Skill | 描述 |
-|-------|------|
-| `/resume-new` | 智能生成简历，根据场景动态生成 HTML |
-| `/resume-edit` | 编辑现有简历，保持设计风格一致 |
-| `/resume-pdf` | 将 HTML 转换为高质量矢量 PDF |
-| `/resume-preview` | 在浏览器中预览简历 |
-
-### 设计指南
-
-设计指南位于 `.claude/skills/resume-new/references/design-guide.md`，包含：
-
-- 页面规范（A4 尺寸、内边距、布局）
-- 色彩方案（专业蓝、极简灰、温暖棕、森林绿）
-- 字体规范（Inter、Noto Sans SC、JetBrains Mono）
-- 内容区块优先级
-- HTML 结构模板
-- 常用样式组件
-
-### 技术栈
-
-- **Tailwind CSS** - 样式框架
-- **Font Awesome** - 图标库
-- **Google Fonts** - 字体（Inter、Noto Sans SC、JetBrains Mono）
-- **Puppeteer** - PDF 生成
 
 ---
 
 ## English
 
-### Features
+**Resumaker** is a set of [Agent Skills](https://agentskills.io) for Claude Code, Codex, Gemini CLI and other compatible agents. It treats your career as a codebase:
 
-- **Intelligent Resume Generation** - Dynamically generates resumes based on target position, industry, and style preferences without fixed template limitations
-- **High-Quality PDF Output** - Vector PDF with selectable text, suitable for printing and online submission
-- **Agent Skills** - Built-in design guidelines with conversational interaction for resume creation
-- **Multiple Style Support** - Minimalist, modern, traditional, creative, and other design styles
-- **Fully Customizable** - Based on Tailwind CSS, easy to modify and extend
+- Keep a **career vault**: one file per achievement, with metrics, sources, confidentiality level, and several "angles" for different roles.
+- **Capture while it's fresh**, either manually or with optional harvesting from your agent session transcripts (SessionEnd hooks for Claude Code, Codex and Gemini CLI, plus scheduled runs). Harvested items are drafts until you confirm them.
+- **Compile per JD**: a match report (hits, gaps, strategy), a tailored resume where every bullet traces back to a confirmed achievement (`trace.py` enforces this), and an interview grill sheet.
+- **Typeset with Typst**, then visually self-check the rendered pages (page count, fill, widows) before delivery.
 
-### Quick Start
-
-#### Prerequisites
-
-- Node.js 18+
-- pnpm (recommended) or npm
-- Google Chrome (for PDF generation)
-- [Claude Code](https://claude.ai/claude-code)
-
-#### Installation
-
-```bash
-git clone https://github.com/your-username/resumaker.git
-cd resumaker
-pnpm install
-```
-
-#### Usage with Claude Code
-
-Start Claude Code in the project directory, then use the following skills:
-
-```
-/resume-new     # Intelligently generate new resume (will ask about scenario and preferences)
-/resume-edit    # Edit existing resume
-/resume-pdf     # Generate PDF
-/resume-preview # Browser preview
-```
-
-#### Manual Usage
-
-```bash
-# Generate PDF (A4 scaling)
-pnpm pdf
-
-# Generate PDF (keep original size)
-pnpm pdf:natural
-
-# Specify input and output files
-node scripts/generate-resume-pdf.js --input html/resume.html --output pdf/resume.pdf
-```
-
-### How It Works
-
-Resumaker doesn't provide fixed templates. Instead, it uses **design guidelines** in Agent Skills to dynamically generate the most suitable resume based on your specific scenario (target position, industry, style preferences).
-
-#### Workflow
-
-1. **Collect Information** - Claude asks about your target position, industry, and style preferences
-2. **Organize Materials** - You provide personal information, work experience, project experience, etc.
-3. **Generate Resume** - Claude generates professional HTML resume based on design guidelines
-4. **Preview and Adjust** - Preview in browser, use `/resume-edit` to adjust content
-5. **Export PDF** - Use `/resume-pdf` to generate high-quality PDF
-
-### Project Structure
-
-```
-resumaker/
-├── assets/              # Image assets (avatars, project screenshots, etc.)
-├── html/                # Generated HTML resumes
-├── pdf/                 # Generated PDFs
-├── reference/           # Reference materials
-├── scripts/
-│   └── generate-resume-pdf.js  # PDF generation script
-├── .claude/
-│   └── skills/          # Claude Code Agent Skills
-│       ├── resume-new/      # Intelligent generation (with design guide)
-│       ├── resume-edit/     # Intelligent editing
-│       ├── resume-pdf/      # PDF generation
-│       └── resume-preview/  # Preview
-├── package.json
-└── README.md
-```
-
-### Skills Reference
-
-| Skill | Description |
-|-------|-------------|
-| `/resume-new` | Intelligently generate resume, dynamically create HTML based on scenario |
-| `/resume-edit` | Edit existing resume while maintaining design consistency |
-| `/resume-pdf` | Convert HTML to high-quality vector PDF |
-| `/resume-preview` | Preview resume in browser |
-
-### Design Guide
-
-The design guide is located at `.claude/skills/resume-new/references/design-guide.md`, including:
-
-- Page specifications (A4 size, padding, layout)
-- Color schemes (Professional Blue, Minimalist Gray, Warm Brown, Forest Green)
-- Font specifications (Inter, Noto Sans SC, JetBrains Mono)
-- Content block priorities
-- HTML structure templates
-- Common style components
-
-### Tech Stack
-
-- **Tailwind CSS** - Styling framework
-- **Font Awesome** - Icon library
-- **Google Fonts** - Fonts (Inter, Noto Sans SC, JetBrains Mono)
-- **Puppeteer** - PDF generation
-
----
-
-## Contributing
-
-欢迎 PR 和 Issue！ / PRs and Issues are welcome!
+Install with `npx skills add KinomotoMio/resumaker -g`, then ask your agent to "initialize my resume vault". The skills are currently written in Chinese, and they work with English resumes too (`meta.lang: en`).
 
 ## License
 
