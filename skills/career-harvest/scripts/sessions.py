@@ -213,6 +213,22 @@ def digest(path, agent, max_chars):
     return SECRET.sub("[已脱敏]", "\n".join(head) + body)
 
 
+def session_cwd(path, agent):
+    """Working directory of a session, read from the transcript head (claude/codex)."""
+    if agent == "gemini":
+        return None
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            for _, line in zip(range(40), f):
+                d = json.loads(line)
+                cwd = d.get("cwd") or (d.get("payload") or {}).get("cwd")
+                if cwd:
+                    return cwd
+    except (OSError, json.JSONDecodeError):
+        pass
+    return None
+
+
 def peek(path, agent):
     """First meaningful user request, for cheap triage before a full digest."""
     try:
@@ -270,6 +286,7 @@ def cmd_pending(args):
                 if time.time() - mtime < 600:  # 可能还在进行中
                     continue
                 found[sid] = {"agent": agent, "session_id": sid, "transcript_path": str(p), "via": "scan",
+                              "cwd": session_cwd(p, agent),
                               "modified": time.strftime("%Y-%m-%d %H:%M", time.localtime(mtime)), "size_kb": p.stat().st_size // 1024}
         state["last_scan"] = time.strftime("%Y-%m-%dT%H:%M:%S")
         save_state(d, state)
