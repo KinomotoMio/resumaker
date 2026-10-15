@@ -81,3 +81,31 @@ python3 scripts/sessions.py mark <session_id> ...
 
 一句话就够："看了 N 个会话，起草了 M 条，建议有空时用 `career-review` 确认。"
 在定时任务里运行时不需要回报，草稿留在 inbox 等用户下次查看即可。
+
+## 开启 / 关闭自动采集
+
+自动采集有两种触发方式，可以只开一种，也可以两种都开。**修改 Agent 配置前，先给用户看清楚要改哪个文件、改什么，得到同意再执行。**
+
+### 方式一：会话结束 hook（推荐）
+
+会话结束时，hook 只做一件事：把会话路径追加到 `<vault>/.resumaker/harvest-queue.jsonl`。
+它不调用模型、不读全文，耗时在毫秒级，不会拖慢 Agent 退出。真正的采集在下次运行本 skill 时进行。
+
+```bash
+python3 scripts/install_hooks.py --agent claude --agent codex --agent gemini --dry-run   # 先预览
+python3 scripts/install_hooks.py --agent claude --agent codex --agent gemini             # 安装
+python3 scripts/install_hooks.py --agent codex --uninstall                               # 卸载
+```
+
+- 只装用户实际在用的 Agent（检查 `~/.claude`、`~/.codex`、`~/.gemini` 是否存在）
+- 安装前会备份原配置为 `.bak`；重复运行是幂等的
+- **Codex** 要求用户在 CLI 里运行 `/hooks` 信任新 hook，之后才会生效。一定要告诉用户这一步
+- 其他支持 SessionEnd 类 hook 的 Agent：把 `~/.config/resumaker/bin/enqueue.py --agent <name>` 配成会话结束时执行的命令即可。它从 stdin 读取包含 `session_id` 和 `transcript_path` 的 JSON
+
+### 方式二：定时采集
+
+让 Agent 定期在后台跑一次本 skill，包括扫描没装 hook 的 Agent 的会话。配置方法见 `references/automation.md`。
+
+### 关闭
+
+卸载 hook，删除定时任务。`.resumaker/` 里的队列和状态文件可以留着，不影响任何东西。
