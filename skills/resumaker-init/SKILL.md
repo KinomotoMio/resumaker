@@ -8,7 +8,7 @@ compatibility: 需要 Python 3.8+；git 可选。适用于任何支持 Agent Ski
 # Resumaker Init
 
 为用户建立一个**长期维护的个人履历库**。履历库是 Resumaker 的核心资产——简历只是从它编译出来的产物。
-方法论见仓库中的 `docs/methodology.md`；库的格式定义在 `assets/vault/VAULT.md`，初始化时会复制进库里。
+方法论见 https://github.com/KinomotoMio/resumaker/blob/main/docs/methodology.md ；库的格式定义在本 skill 的 `assets/vault/VAULT.md`，初始化时会复制进库里，之后所有 skill 都以库里的那份为准。
 
 ## 0. 先检查是否已经有库
 
