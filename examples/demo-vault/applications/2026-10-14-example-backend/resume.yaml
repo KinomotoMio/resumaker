@@ -1,0 +1,88 @@
+# 示例数据：resume-tailor 会按这个结构生成 resume.yaml。
+# bullet 里的 from 指向履历库 achievements/ 中的成果 id，用于溯源检查。
+meta:
+  lang: zh
+  template: clean
+  accent: "#1F4E79"
+  density: airy
+
+basics:
+  name: 林知远
+  headline: 后端工程师 · 3 年 · 高并发 / 实时通信
+  contacts:
+    - text: zhiyuan.lin@example.com
+      url: mailto:zhiyuan.lin@example.com
+    - text: 138-0000-0000
+    - text: 上海
+    - text: github.com/zhiyuan-lin
+      url: https://github.com/zhiyuan-lin
+
+summary: 3 年 Go 后端经验，专注**实时通信与高并发网关**。主导过百万级长连接网关的连接模型重构，熟悉从压测、灰度到线上可观测性的完整链路。
+
+sections:
+  - title: 工作经历
+    kind: entries
+    items:
+      - title: Acme 科技
+        subtitle: 后端工程师
+        meta: 上海
+        period: 2024.07 – 至今
+        summary: 直播互动平台基础架构组，负责实时消息网关与弹幕系统。
+        bullets:
+          - text: 主导 WebSocket 网关连接模型重构（每连接一协程 → epoll + 协程池），**P99 延迟 320ms → 85ms**，单机承载连接数提升约 3 倍
+            from: 2025-03-ws-gateway-perf
+          - text: 设计弹幕分级限流与降级策略，晚高峰峰值 **12 万条/秒** 下核心房间零丢弃，相关投诉下降 **60%**
+            from: 2025-06-danmaku-ratelimit
+          - text: 推动网关接入 OpenTelemetry 全链路追踪，线上问题平均定位时间由小时级缩短到 **15 分钟内**
+            from: 2025-09-gateway-otel
+          - text: 牵头制定网关灰度发布与回滚规范，联合 3 个业务组完成全量迁移，迁移期间 **零 P1 事故**
+            from: 2025-04-gateway-rollout
+          - text: 带 2 名新人完成 onboarding，沉淀网关故障排查手册 12 篇，成为组内值班标准文档
+            from: 2025-11-oncall-handbook
+      - title: 星火数据
+        subtitle: 后端开发实习生
+        meta: 杭州
+        period: 2023.06 – 2023.09
+        bullets:
+          - text: 为数据同步服务实现基于 Kafka 的增量订阅，替换原定时全量拉取，同步延迟由 10 分钟降至 **秒级**
+            from: 2023-08-kafka-cdc
+          - text: 编写数据一致性校验工具，按表抽样比对上下游，发现并修复 **3 类** 历史脏数据问题
+            from: 2023-09-consistency-checker
+
+  - title: 项目经历
+    kind: entries
+    items:
+      - title: tinyraft
+        subtitle: 个人开源项目 · Go
+        period: 2024.01 – 2024.05
+        bullets:
+          - text: 从零实现 Raft 共识（选主、日志复制、快照），通过 MIT 6.824 全部测试用例；**GitHub 420+ Star**
+            from: 2024-05-tinyraft
+          - text: 用 Jepsen 风格的故障注入测试验证线性一致性，定位并修复 2 个网络分区下的日志截断 bug
+            from: 2024-05-tinyraft
+      - title: 开源贡献
+        subtitle: gorilla/websocket、go-redis
+        period: 2023 – 至今
+        bullets:
+          - text: 向 go-redis 提交连接池超时竞态修复（已合并）；为 gorilla/websocket 补充压缩协商相关测试
+            from: 2024-02-oss-contrib
+
+  - title: 教育背景
+    kind: entries
+    items:
+      - title: 华东某大学
+        subtitle: 计算机科学与技术 · 本科
+        period: 2020.09 – 2024.06
+        bullets:
+          - GPA 3.7 / 4.0，专业前 10%；ACM-ICPC 亚洲区域赛铜奖
+          - 核心课程：操作系统、计算机网络、分布式系统、数据库系统
+
+  - title: 技能
+    kind: skills
+    items:
+      - label: 语言
+        value: Go（熟练）、Python、TypeScript
+      - label: 基础设施
+        value: Kafka、Redis、MySQL、Kubernetes、Prometheus / Grafana、OpenTelemetry
+      - label: 方向
+        value: 高并发网络编程、分布式一致性、可观测性
